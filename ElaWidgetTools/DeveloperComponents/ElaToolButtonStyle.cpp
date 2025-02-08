@@ -81,6 +81,13 @@ void ElaToolButtonStyle::drawComplexControl(ComplexControl control, const QStyle
                     }
                 }
             }
+            else
+            {
+                if (!_pIsTransparent)
+                {
+                    painter->drawRoundedRect(toolButtonRect, _pBorderRadius, _pBorderRadius);
+                }
+            }
             // 指示器绘制
             _drawIndicator(painter, bopt, widget);
 
