@@ -65,7 +65,6 @@ if (WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
         ElaWidgetTools
-        ElaPacketIO
     )
 else ()
     target_include_directories(${PROJECT_NAME} PUBLIC
