@@ -21,7 +21,7 @@ ElaPopularCardFloater::ElaPopularCardFloater(ElaPopularCard* card, ElaPopularCar
     setStyleSheet("#ElaPopularCardFloater{background-color:transparent}");
     setMouseTracking(true);
 
-    _overButton = new ElaPushButton("获取", this);
+    _overButton = new ElaPushButton("跳转", this);
     _opacityEffect = new QGraphicsOpacityEffect(_overButton);
     _opacityEffect->setOpacity(1);
     _overButton->setGraphicsEffect(_opacityEffect);
