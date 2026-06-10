@@ -6,6 +6,14 @@
 #include <dwmapi.h>
 #include <windowsx.h>
 
+#ifndef SM_CXPADDEDBORDER
+#define SM_CXPADDEDBORDER 92
+#endif
+
+#ifndef USER_DEFAULT_SCREEN_DPI
+#define USER_DEFAULT_SCREEN_DPI 96
+#endif
+
 #define Win7_Origin "6.1.0"
 #define Win8_Origin "6.2.0"
 #define Win10_Origin "10.0.0"
