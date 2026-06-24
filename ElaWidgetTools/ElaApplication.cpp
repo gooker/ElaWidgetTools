@@ -14,7 +14,9 @@ ElaApplication::ElaApplication(QObject* parent)
     Q_D(ElaApplication);
     d->q_ptr = this;
     d->_pIsEnableMica = false;
-    d->_pMicaImagePath = ":/include/Image/MicaBase.png";
+    d->_pLightMicaImagePath = ":/include/Image/MicaBase2.png";
+    d->_pDarkMicaImagePath = ":/include/Image/MicaBase.png";
+    d->_pMicaImagePath = d->_pLightMicaImagePath;
     d->_themeMode = eTheme->getThemeMode();
     connect(eTheme, &ElaTheme::themeModeChanged, d, &ElaApplicationPrivate::onThemeModeChanged);
 }
@@ -29,7 +31,7 @@ void ElaApplication::setIsEnableMica(bool isEnable)
     d->_pIsEnableMica = isEnable;
     if (isEnable)
     {
-        d->_initMicaBaseImage(QImage(d->_pMicaImagePath));
+        d->_initMicaBaseImage(QImage(d->_pLightMicaImagePath), QImage(d->_pDarkMicaImagePath));
     }
     else
     {
@@ -48,8 +50,12 @@ void ElaApplication::setMicaImagePath(QString micaImagePath)
 {
     Q_D(ElaApplication);
     d->_pMicaImagePath = micaImagePath;
-    d->_initMicaBaseImage(QImage(d->_pMicaImagePath));
+    d->_pLightMicaImagePath = micaImagePath;
+    d->_pDarkMicaImagePath = micaImagePath;
+    d->_initMicaBaseImage(QImage(d->_pLightMicaImagePath), QImage(d->_pDarkMicaImagePath));
     Q_EMIT pMicaImagePathChanged();
+    Q_EMIT pLightMicaImagePathChanged();
+    Q_EMIT pDarkMicaImagePathChanged();
 }
 
 QString ElaApplication::getMicaImagePath() const
@@ -58,6 +64,33 @@ QString ElaApplication::getMicaImagePath() const
     return d->_pMicaImagePath;
 }
 
+void ElaApplication::setLightMicaImagePath(QString lightMicaImagePath)
+{
+    Q_D(ElaApplication);
+    d->_pLightMicaImagePath = lightMicaImagePath;
+    d->_initMicaBaseImage(QImage(d->_pLightMicaImagePath), QImage(d->_pDarkMicaImagePath));
+    Q_EMIT pLightMicaImagePathChanged();
+}
+
+QString ElaApplication::getLightMicaImagePath() const
+{
+    Q_D(const ElaApplication);
+    return d->_pLightMicaImagePath;
+}
+
+void ElaApplication::setDarkMicaImagePath(QString darkMicaImagePath)
+{
+    Q_D(ElaApplication);
+    d->_pDarkMicaImagePath = darkMicaImagePath;
+    d->_initMicaBaseImage(QImage(d->_pLightMicaImagePath), QImage(d->_pDarkMicaImagePath));
+    Q_EMIT pDarkMicaImagePathChanged();
+}
+
+QString ElaApplication::getDarkMicaImagePath() const
+{
+    Q_D(const ElaApplication);
+    return d->_pDarkMicaImagePath;
+}
 void ElaApplication::init()
 {
     Q_INIT_RESOURCE(ElaWidgetTools);

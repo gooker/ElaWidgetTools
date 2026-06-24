@@ -61,10 +61,10 @@ bool ElaApplicationPrivate::eventFilter(QObject* watched, QEvent* event)
     return QObject::eventFilter(watched, event);
 }
 
-void ElaApplicationPrivate::_initMicaBaseImage(QImage img)
+void ElaApplicationPrivate::_initMicaBaseImage(QImage lightImg, QImage darkImg)
 {
     Q_Q(ElaApplication);
-    if (img.isNull())
+    if (lightImg.isNull() || darkImg.isNull())
     {
         return;
     }
@@ -81,7 +81,7 @@ void ElaApplicationPrivate::_initMicaBaseImage(QImage img)
     initObject->moveToThread(initThread);
     initThread->start();
     connect(this, &ElaApplicationPrivate::initMicaBase, initObject, &ElaMicaBaseInitObject::onInitMicaBase);
-    Q_EMIT initMicaBase(img);
+    Q_EMIT initMicaBase(lightImg, darkImg);
 }
 
 QRect ElaApplicationPrivate::_calculateWindowVirtualGeometry(QWidget* widget)

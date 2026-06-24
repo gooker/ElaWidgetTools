@@ -3,6 +3,7 @@
 
 #include <QColor>
 #include <QIcon>
+#include <QImage>
 #include <QObject>
 
 #include "Def.h"
@@ -13,12 +14,14 @@ class ElaApplicationPrivate : public QObject
     Q_D_CREATE(ElaApplication)
     Q_PROPERTY_CREATE_D(bool, IsEnableMica)
     Q_PROPERTY_CREATE_D(QString, MicaImagePath)
+    Q_PROPERTY_CREATE_D(QString, LightMicaImagePath)
+    Q_PROPERTY_CREATE_D(QString, DarkMicaImagePath)
 public:
     explicit ElaApplicationPrivate(QObject* parent = nullptr);
     ~ElaApplicationPrivate() override;
     Q_SLOT void onThemeModeChanged(ElaThemeType::ThemeMode themeMode);
 Q_SIGNALS:
-    Q_SIGNAL void initMicaBase(QImage img);
+    Q_SIGNAL void initMicaBase(QImage lightImg, QImage darkImg);
 
 protected:
     virtual bool eventFilter(QObject* watched, QEvent* event) override;
@@ -29,7 +32,7 @@ private:
     QList<QWidget*> _micaWidgetList;
     QImage _lightBaseImage;
     QImage _darkBaseImage;
-    void _initMicaBaseImage(QImage img);
+    void _initMicaBaseImage(QImage lightImg, QImage darkImg);
     QRect _calculateWindowVirtualGeometry(QWidget* widget);
     void _updateMica(QWidget* widget, bool isProcessEvent = true);
     void _updateAllMicaWidget();

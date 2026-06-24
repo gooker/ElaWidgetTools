@@ -1,5 +1,6 @@
 #include "ElaMicaBaseInitObject.h"
 
+#include <QColor>
 #include <QImage>
 
 #include "ElaApplicationPrivate.h"
@@ -14,58 +15,42 @@ ElaMicaBaseInitObject::~ElaMicaBaseInitObject()
 {
 }
 
-void ElaMicaBaseInitObject::onInitMicaBase(QImage img)
+QImage ElaMicaBaseInitObject::_createMicaBaseImage(QImage img, bool isLight)
 {
-    // QColorDialog
-    // 统一处理为1920*1080以节省空间
     img = img.scaled(QSize(1920, 1080), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
     QImage blurImage = ElaExponentialBlur::doExponentialBlur(img, 500).toImage();
-    QImage lightImage = blurImage;
-    QImage darkImage = blurImage;
-    QColor lightMixColor = QColor(0xF3, 0xF3, 0xF3);
-    lightMixColor = lightMixColor.toHsv();
-    QColor darkMixColor = QColor(0x20, 0x20, 0x20);
-    darkMixColor = darkMixColor.toHsv();
+    QImage baseImage = blurImage;
     QColor originColor;
-    QColor lightColor;
-    QColor darkColor;
+    QColor baseColor;
     int h, s, v;
     for (int y = 0; y < blurImage.height(); y++)
     {
         QRgb* line = (QRgb*)blurImage.scanLine(y);
         for (int x = 0; x < blurImage.width(); x++)
         {
-            originColor = QColor(line[x]);
-            originColor = originColor.toHsv();
+            originColor = QColor(line[x]).toHsv();
             h = originColor.hsvHue();
             s = originColor.hsvSaturation();
             v = originColor.value();
-            if (s / 20 > 11)
+            if (isLight)
             {
-                lightColor.setHsv(h, (s / 20 + 11) / 2, 250);
+                baseColor.setHsv(h, s / 20 > 11 ? (s / 20 + 11) / 2 : 11, 250);
             }
             else
             {
-                lightColor.setHsv(h, 11, 250);
+                baseColor.setHsv(h, s / 2, v / 1.1 > 40 ? (v / 1.1 + 40) / 2 : 40);
             }
-            lightColor = lightColor.toRgb();
-            if (v / 1.1 > 40)
-            {
-                darkColor.setHsv(h, s / 2, (v / 1.1 + 40) / 2);
-            }
-            else
-            {
-                darkColor.setHsv(h, s / 2, 40);
-            }
-            darkColor = darkColor.toRgb();
-            lightImage.setPixel(x, y, qRgb(lightColor.red(), lightColor.green(), lightColor.blue()));
-            darkImage.setPixel(x, y, qRgb(darkColor.red(), darkColor.green(), darkColor.blue()));
+            baseColor = baseColor.toRgb();
+            baseImage.setPixel(x, y, qRgb(baseColor.red(), baseColor.green(), baseColor.blue()));
         }
     }
-    _appPrivate->_lightBaseImage = lightImage.copy();
-    _appPrivate->_darkBaseImage = darkImage.copy();
-    // _appPrivate->_lightBaseImage.save("light.png", "PNG");
-    // _appPrivate->_darkBaseImage.save("dark.png", "PNG");
+    return baseImage;
+}
+
+void ElaMicaBaseInitObject::onInitMicaBase(QImage lightImg, QImage darkImg)
+{
+    _appPrivate->_lightBaseImage = _createMicaBaseImage(lightImg, true);
+    _appPrivate->_darkBaseImage = _createMicaBaseImage(darkImg, false);
     Q_EMIT initFinished();
 }
