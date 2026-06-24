@@ -45,6 +45,14 @@ public:
     void onFooterViewClicked(const QModelIndex& index, bool isLogRoute = true);
 
 private:
+    static constexpr int kCompactWidth = 47;
+    static constexpr int kCompactNavigationViewWidth = 40;
+    static constexpr int kDefaultMaximalWidth = 150;
+    static constexpr int kMinMaximalWidth = 120;
+    static constexpr int kMaxMaximalWidth = 600;
+    static constexpr int kResizeHandleWidth = 6;
+    static constexpr int kNavigationViewRightPadding = kResizeHandleWidth;
+
     ElaThemeType::ThemeMode _themeMode;
     QMap<QString, QString> _suggestKeyMap;
     QMap<QString, const QMetaObject*> _pageMetaMap;
@@ -64,6 +72,10 @@ private:
     ElaSuggestBox* _navigationSuggestBox{nullptr};
     ElaInteractiveCard* _userCard{nullptr};
     bool _isShowUserCard{true};
+    bool _isResizing{false};
+    int _maximalWidth{kDefaultMaximalWidth};
+    int _resizeStartGlobalX{0};
+    int _resizeStartWidth{kDefaultMaximalWidth};
 
     QList<ElaNavigationNode*> _lastExpandedNodesList;
 
@@ -76,6 +88,12 @@ private:
     void _addFooterPage(QWidget* page, QString footKey);
 
     void _raiseNavigationBar();
+    void _initNavigationBarConfig();
+    void _saveNavigationBarConfig();
+    bool _isResizeHandlePos(const QPoint& pos) const;
+    void _setMaximalWidth(int width);
+    int _maximalNavigationViewWidth() const;
+    void _setResizeHandleMargin(ElaNavigationType::NavigationDisplayMode displayMode);
 
     void _doComponentAnimation(ElaNavigationType::NavigationDisplayMode displayMode, bool isAnimation);
     void _handleNavigationExpandState(bool isSave);

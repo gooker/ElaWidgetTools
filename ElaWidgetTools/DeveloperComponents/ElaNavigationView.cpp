@@ -5,6 +5,7 @@
 #include <QModelIndex>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QResizeEvent>
 #include <QScrollBar>
 #include <QScroller>
 
@@ -14,6 +15,11 @@
 #include "ElaNavigationStyle.h"
 #include "ElaScrollBar.h"
 #include "ElaToolTip.h"
+namespace
+{
+constexpr int kCompactScrollBarWidth = 0;
+constexpr int kMaximalScrollBarWidth = 10;
+}
 ElaNavigationView::ElaNavigationView(QWidget* parent)
     : QTreeView(parent)
 {
@@ -37,9 +43,10 @@ ElaNavigationView::ElaNavigationView(QWidget* parent)
     setVerticalScrollBar(vScrollBar);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-    ElaScrollBar* floatVScrollBar = new ElaScrollBar(vScrollBar, this);
-    floatVScrollBar->setIsAnimation(true);
-    floatVScrollBar->installEventFilter(this);
+    _floatVScrollBar = new ElaScrollBar(vScrollBar, this);
+    _floatVScrollBar->setIsAnimation(true);
+    _updateCompactMode();
+    _floatVScrollBar->installEventFilter(this);
 
     _navigationStyle = new ElaNavigationStyle(this->style());
     _navigationStyle->setNavigationView(this);
@@ -146,6 +153,12 @@ void ElaNavigationView::mouseReleaseEvent(QMouseEvent* event)
     }
 }
 
+void ElaNavigationView::resizeEvent(QResizeEvent* event)
+{
+    QTreeView::resizeEvent(event);
+    _updateCompactMode();
+}
+
 bool ElaNavigationView::eventFilter(QObject* watched, QEvent* event)
 {
     switch (event->type())
@@ -178,4 +191,12 @@ bool ElaNavigationView::eventFilter(QObject* watched, QEvent* event)
     }
     }
     return QAbstractItemView::eventFilter(watched, event);
+}
+
+void ElaNavigationView::_updateCompactMode()
+{
+    if (_floatVScrollBar)
+    {
+        _floatVScrollBar->setFixedWidth(width() <= 60 ? kCompactScrollBarWidth : kMaximalScrollBarWidth);
+    }
 }

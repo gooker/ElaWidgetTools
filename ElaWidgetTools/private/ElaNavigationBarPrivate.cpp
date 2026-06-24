@@ -1,7 +1,9 @@
 ﻿#include "ElaNavigationBarPrivate.h"
 
+#include <QCoreApplication>
 #include <QLayout>
 #include <QPropertyAnimation>
+#include <QSettings>
 
 #include "ElaApplication.h"
 #include "ElaBaseListView.h"
@@ -23,6 +25,7 @@
 ElaNavigationBarPrivate::ElaNavigationBarPrivate(QObject* parent)
     : QObject{parent}
 {
+    _initNavigationBarConfig();
 }
 
 ElaNavigationBarPrivate::~ElaNavigationBarPrivate()
@@ -389,12 +392,53 @@ void ElaNavigationBarPrivate::_raiseNavigationBar()
     q->raise();
 }
 
+void ElaNavigationBarPrivate::_initNavigationBarConfig()
+{
+    QSettings settings(QCoreApplication::applicationDirPath() + "/ElaWidgetTools.ini", QSettings::IniFormat);
+    bool isWidthValid = false;
+    const int configuredWidth = settings.value("Navigation/MaximalWidth", kDefaultMaximalWidth).toInt(&isWidthValid);
+    _setMaximalWidth(isWidthValid ? configuredWidth : kDefaultMaximalWidth);
+}
+
+void ElaNavigationBarPrivate::_saveNavigationBarConfig()
+{
+    QSettings settings(QCoreApplication::applicationDirPath() + "/ElaWidgetTools.ini", QSettings::IniFormat);
+    settings.setValue("Navigation/MaximalWidth", _maximalWidth);
+    settings.sync();
+}
+
+bool ElaNavigationBarPrivate::_isResizeHandlePos(const QPoint& pos) const
+{
+    Q_Q(const ElaNavigationBar);
+    return _currentDisplayMode == ElaNavigationType::Maximal && pos.x() >= q->width() - kResizeHandleWidth && pos.x() < q->width() && pos.y() >= 0 && pos.y() < q->height();
+}
+
+void ElaNavigationBarPrivate::_setMaximalWidth(int width)
+{
+    _maximalWidth = qBound(kMinMaximalWidth, width, kMaxMaximalWidth);
+}
+
+int ElaNavigationBarPrivate::_maximalNavigationViewWidth() const
+{
+    return qMax(kCompactNavigationViewWidth, _maximalWidth - kNavigationViewRightPadding);
+}
+
+void ElaNavigationBarPrivate::_setResizeHandleMargin(ElaNavigationType::NavigationDisplayMode displayMode)
+{
+    Q_Q(ElaNavigationBar);
+    if (QLayout* layout = q->layout())
+    {
+        layout->setContentsMargins(0, 10, displayMode == ElaNavigationType::Maximal ? kResizeHandleWidth : 0, 0);
+    }
+}
+
 void ElaNavigationBarPrivate::_doComponentAnimation(ElaNavigationType::NavigationDisplayMode displayMode, bool isAnimation)
 {
     switch (displayMode)
     {
     case ElaNavigationType::Minimal:
     {
+        _setResizeHandleMargin(displayMode);
         _doNavigationBarWidthAnimation(displayMode, isAnimation);
         if (_currentDisplayMode == ElaNavigationType::Maximal)
         {
@@ -412,6 +456,7 @@ void ElaNavigationBarPrivate::_doComponentAnimation(ElaNavigationType::Navigatio
     }
     case ElaNavigationType::Compact:
     {
+        _setResizeHandleMargin(displayMode);
         _doNavigationBarWidthAnimation(displayMode, isAnimation);
         _doNavigationViewWidthAnimation(isAnimation);
         if (_currentDisplayMode != ElaNavigationType::Minimal)
@@ -428,6 +473,7 @@ void ElaNavigationBarPrivate::_doComponentAnimation(ElaNavigationType::Navigatio
     }
     case ElaNavigationType::Maximal:
     {
+        _setResizeHandleMargin(displayMode);
         _resetLayout();
         _handleCompactToMaximalLayout();
         _doNavigationBarWidthAnimation(displayMode, isAnimation);
@@ -462,7 +508,7 @@ void ElaNavigationBarPrivate::_handleNavigationExpandState(bool isSave)
         for (auto node: _lastExpandedNodesList)
         {
             // 修正动画覆盖
-            _navigationView->resize(295, _navigationView->height());
+            _navigationView->resize(_maximalNavigationViewWidth(), _navigationView->height());
             onTreeViewClicked(node->getModelIndex(), false);
         }
     }
@@ -559,7 +605,7 @@ void ElaNavigationBarPrivate::_doNavigationBarWidthAnimation(ElaNavigationType::
         connect(navigationBarWidthAnimation, &QPropertyAnimation::valueChanged, this, [=](const QVariant& value) {
             q->setFixedWidth(value.toUInt());
         });
-        navigationBarWidthAnimation->setEndValue(47);
+        navigationBarWidthAnimation->setEndValue(kCompactWidth);
         break;
     }
     case ElaNavigationType::Maximal:
@@ -570,7 +616,7 @@ void ElaNavigationBarPrivate::_doNavigationBarWidthAnimation(ElaNavigationType::
         connect(navigationBarWidthAnimation, &QPropertyAnimation::valueChanged, this, [=](const QVariant& value) {
             q->setFixedWidth(value.toUInt());
         });
-        navigationBarWidthAnimation->setEndValue(300);
+        navigationBarWidthAnimation->setEndValue(_maximalWidth);
         break;
     }
     default:
@@ -589,7 +635,7 @@ void ElaNavigationBarPrivate::_doNavigationViewWidthAnimation(bool isAnimation)
     });
     navigationViewWidthAnimation->setEasingCurve(QEasingCurve::OutCubic);
     navigationViewWidthAnimation->setStartValue(_navigationView->columnWidth(0));
-    navigationViewWidthAnimation->setEndValue(40);
+    navigationViewWidthAnimation->setEndValue(kCompactNavigationViewWidth);
     navigationViewWidthAnimation->setDuration(isAnimation ? 285 : 0);
     navigationViewWidthAnimation->start(QAbstractAnimation::DeleteWhenStopped);
 }

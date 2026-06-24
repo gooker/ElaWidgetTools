@@ -16,6 +16,7 @@
 #include "private/ElaNavigationBarPrivate.h"
 #include "private/ElaSuggestBoxPrivate.h"
 #include <QEvent>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPropertyAnimation>
@@ -28,7 +29,8 @@ ElaNavigationBar::ElaNavigationBar(QWidget* parent)
 {
     Q_D(ElaNavigationBar);
     d->q_ptr = this;
-    setFixedWidth(300);
+    setFixedWidth(d->_maximalWidth);
+    setMouseTracking(true);
     d->_pIsTransparent = true;
 
     //用户卡片
@@ -139,7 +141,7 @@ ElaNavigationBar::ElaNavigationBar(QWidget* parent)
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setAlignment(Qt::AlignLeft);
     mainLayout->setSpacing(0);
-    mainLayout->setContentsMargins(0, 10, 5, 0);
+    mainLayout->setContentsMargins(0, 10, d->kResizeHandleWidth, 0);
     mainLayout->addLayout(userCardLayout);
     mainLayout->addSpacing(4);
     mainLayout->addLayout(d->_navigationSuggestLayout);
@@ -458,6 +460,71 @@ void ElaNavigationBar::setDisplayMode(ElaNavigationType::NavigationDisplayMode d
     }
     d->_doComponentAnimation(displayMode, isAnimation);
     d->_raiseNavigationBar();
+}
+
+void ElaNavigationBar::mousePressEvent(QMouseEvent* event)
+{
+    Q_D(ElaNavigationBar);
+    if (event->button() == Qt::LeftButton && d->_isResizeHandlePos(event->pos()))
+    {
+        d->_isResizing = true;
+        d->_resizeStartGlobalX = event->globalPos().x();
+        d->_resizeStartWidth = width();
+        setCursor(Qt::SizeHorCursor);
+        grabMouse();
+        event->accept();
+        return;
+    }
+    QWidget::mousePressEvent(event);
+}
+
+void ElaNavigationBar::mouseMoveEvent(QMouseEvent* event)
+{
+    Q_D(ElaNavigationBar);
+    if (d->_isResizing)
+    {
+        d->_setMaximalWidth(d->_resizeStartWidth + event->globalPos().x() - d->_resizeStartGlobalX);
+        setFixedWidth(d->_maximalWidth);
+        event->accept();
+        return;
+    }
+    if (d->_isResizeHandlePos(event->pos()))
+    {
+        setCursor(Qt::SizeHorCursor);
+    }
+    else
+    {
+        unsetCursor();
+    }
+    QWidget::mouseMoveEvent(event);
+}
+
+void ElaNavigationBar::mouseReleaseEvent(QMouseEvent* event)
+{
+    Q_D(ElaNavigationBar);
+    if (event->button() == Qt::LeftButton && d->_isResizing)
+    {
+        d->_isResizing = false;
+        releaseMouse();
+        d->_saveNavigationBarConfig();
+        if (!d->_isResizeHandlePos(event->pos()))
+        {
+            unsetCursor();
+        }
+        event->accept();
+        return;
+    }
+    QWidget::mouseReleaseEvent(event);
+}
+
+void ElaNavigationBar::leaveEvent(QEvent* event)
+{
+    Q_D(ElaNavigationBar);
+    if (!d->_isResizing)
+    {
+        unsetCursor();
+    }
+    QWidget::leaveEvent(event);
 }
 
 void ElaNavigationBar::paintEvent(QPaintEvent* event)

@@ -7,6 +7,7 @@
 class ElaScrollBar;
 class ElaNavigationStyle;
 class ElaToolTip;
+class QResizeEvent;
 class ElaNavigationView : public QTreeView
 {
     Q_OBJECT
@@ -24,11 +25,14 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent* event) override;
     virtual void mouseDoubleClickEvent(QMouseEvent* event) override;
     virtual void mouseReleaseEvent(QMouseEvent* event) override;
+    virtual void resizeEvent(QResizeEvent* event) override;
     virtual bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
+    void _updateCompactMode();
     ElaNavigationStyle* _navigationStyle{nullptr};
     ElaToolTip* _compactToolTip{nullptr};
+    ElaScrollBar* _floatVScrollBar{nullptr};
 };
 
 #endif // ELANAVIGATIONVIEW_H

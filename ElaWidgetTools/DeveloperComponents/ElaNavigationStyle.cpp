@@ -211,7 +211,7 @@ void ElaNavigationStyle::drawControl(ControlElement element, const QStyleOption*
             QString text = painter->fontMetrics().elidedText(node->getNodeTitle(), Qt::ElideRight, textRect.width());
             painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, text);
 
-            if (viewWidth > 260)
+            if (viewWidth > _compactModeWidthThreshold)
             {
                 // 展开图标 KeyPoints
                 if (node->getIsExpanderNode())
