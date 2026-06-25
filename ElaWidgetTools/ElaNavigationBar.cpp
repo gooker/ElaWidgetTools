@@ -35,11 +35,13 @@ ElaNavigationBar::ElaNavigationBar(QWidget* parent)
 
     //用户卡片
     d->_userCard = new ElaInteractiveCard(this);
+    d->_userCard->setCursor(Qt::ArrowCursor);
     d->_userCard->setCardPixmap(QPixmap(":/include/Image/Cirno.jpg"));
     d->_userCard->setTitle("Ela Tool");
     d->_userCard->setSubTitle("Liniyous@gmail.com");
     connect(d->_userCard, &ElaInteractiveCard::clicked, this, &ElaNavigationBar::userInfoCardClicked);
     d->_userButton = new ElaIconButton(QPixmap(":/include/Image/Cirno.jpg"), this);
+    d->_userButton->setCursor(Qt::ArrowCursor);
     d->_userButton->setFixedSize(36, 36);
     d->_userButton->setVisible(false);
     d->_userButton->setBorderRadius(8);
@@ -108,6 +110,8 @@ ElaNavigationBar::ElaNavigationBar(QWidget* parent)
     // 导航模型
     d->_navigationModel = new ElaNavigationModel(this);
     d->_navigationView = new ElaNavigationView(this);
+    d->_navigationView->setCursor(Qt::ArrowCursor);
+    d->_navigationView->viewport()->setCursor(Qt::ArrowCursor);
     d->_navigationView->setModel(d->_navigationModel);
     connect(d->_navigationView, &ElaNavigationView::navigationClicked, this, [=](const QModelIndex& index) {
         d->onTreeViewClicked(index);
@@ -116,6 +120,8 @@ ElaNavigationBar::ElaNavigationBar(QWidget* parent)
 
     // 页脚
     d->_footerView = new ElaBaseListView(this);
+    d->_footerView->setCursor(Qt::ArrowCursor);
+    d->_footerView->viewport()->setCursor(Qt::ArrowCursor);
     d->_footerView->setFixedHeight(0);
     d->_footerModel = new ElaFooterModel(this);
     d->_footerView->setModel(d->_footerModel);
